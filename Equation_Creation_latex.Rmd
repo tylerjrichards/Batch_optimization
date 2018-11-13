@@ -1,0 +1,17 @@
+---
+title: "Equation_Creation"
+output: pdf_document
+---
+
+$$
+
+\begin
+
+min\,\sum (\alpha_i - \beta_i) \,*\,\gamma_j \\
+\\
+where
+\\
+
+\end
+$$
+
