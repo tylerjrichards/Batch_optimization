@@ -1,4 +1,5 @@
 library(shiny)
+library(readxl)
 
 # Define UI for data upload app ----
 ui <- fluidPage(
@@ -13,11 +14,11 @@ ui <- fluidPage(
     sidebarPanel(
       
       # Input: Select a file ----
-      fileInput("file1", "Choose CSV File",
+      fileInput("file1", "Choose Excel File",
                 multiple = FALSE,
                 accept = c("text/csv",
                            "text/comma-separated-values,text/plain",
-                           ".csv")),
+                           ".xlsx")),
       
       # Horizontal line ----
 
@@ -50,7 +51,6 @@ ui <- fluidPage(
     
     # Main panel for displaying outputs ----
     mainPanel(
-      textOutput("header"),
       # Output: Data file ----
       tableOutput("contents")
       
@@ -79,19 +79,20 @@ server <- function(input, output) {
     # having a comma separator causes `read.csv` to error
     tryCatch(
       {
-        df <- read.csv(input$file1$datapath,
-                       header = input$header,
-                       sep = input$sep)
+        df <- read_xlsx(input$file1$datapath,sheet = "Raw Report with Extra Columns")
         library(dplyr)
+        
         current_date = Sys.Date()
-        df$finish_shifts = round(df$time_to_make / 8)
-        df$finish_date = as.Date(current_date) + df$finish_shifts 
-        df$due_date_diff = difftime(df$finish_date,df$due_date)
-        df$scaled_diff = scale(df$due_date_diff)
-        df$rank = df$client_importance + df$scaled_diff
-        df = df[order(df$rank, decreasing = TRUE),]
-        df = df %>% 
-          select(product, rank, due_date)
+        df$Item_time =  substr(df$`Item ID`, 2, 2)
+        # df$finish_shifts = round(df$time_to_make / 8)
+        # df$finish_date = as.Date(current_date) + df$finish_shifts 
+        # df$due_date_diff = difftime(df$finish_date,df$due_date)
+        # df$scaled_diff = scale(df$due_date_diff)
+        # df$rank = df$client_importance + df$scaled_diff
+        # df = df[order(df$rank, decreasing = TRUE),]
+        # df = df %>% 
+        #   select(product, rank, due_date)
+        
       },
       error = function(e) {
         # return a safeError if a parsing error occurs
@@ -110,13 +111,13 @@ server <- function(input, output) {
   
   output$downloadData <- downloadHandler(
     filename <- function() {
-      paste("output", "csv", sep=".")
+      paste("output", "xlsx", sep=".")
     },
     
     content <- function(file) {
-      file.copy("example_data.csv", file)
+      file.copy("Example_data.xlsx", file)
     },
-    contentType = "csv"
+    contentType = "xlsx"
   )
   
 }
