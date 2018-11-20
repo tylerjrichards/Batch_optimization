@@ -81,6 +81,7 @@ server <- function(input, output) {
       {
         df <- read_xlsx(input$file1$datapath,sheet = "Raw Report with Extra Columns")
         library(dplyr)
+        time_estimates = read.csv("Time_Estimates.csv", header = TRUE)
         
         current_date = Sys.Date()
         df$Item_time =  substr(df$`Item ID`, 2, 2)
