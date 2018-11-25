@@ -1,6 +1,6 @@
 library(shiny)
 library(readxl)
-
+library(janitor)
 # Define UI for data upload app ----
 ui <- fluidPage(
   
@@ -29,12 +29,7 @@ ui <- fluidPage(
       # Input: Checkbox if file has header ----
       checkboxInput("header", "Header", TRUE),
       
-      # Input: Select separator ----
-      radioButtons("sep", "Separator",
-                   choices = c(Comma = ",",
-                               Semicolon = ";",
-                               Tab = "\t"),
-                   selected = ","),
+      
       
       
       
@@ -84,7 +79,29 @@ server <- function(input, output) {
         time_estimates = read.csv("Time_Estimates.csv", header = TRUE)
         
         current_date = Sys.Date()
-        df$Item_time =  substr(df$`Item ID`, 2, 2)
+        
+        #determine what type of product this is
+        df$Item_time =  toupper(substr(df$`Item ID`, 2, 2))
+        
+        #merge with estimated times
+        
+        estimated_times = read.csv("Time_Estimates.csv")
+        df = merge(df, estimated_times, by.x = "Item_time", by.y = "Letter")
+        
+        #estimate date completed
+        new_df = df %>% 
+          clean_names() %>% 
+          mutate(estimated_shifts = (avg_time_minutes/60)/8, 
+                 estimated_days = estimated_shifts / 2,
+                 estimated_days = estimated_days * (qty_remaining/100),
+                 finish_date = as.Date(current_date) + estimated_days,
+                 due_date_diff = difftime(finish_date, ship_by))
+          
+          
+          
+          
+        #calculate date difference
+        
         # df$finish_shifts = round(df$time_to_make / 8)
         # df$finish_date = as.Date(current_date) + df$finish_shifts 
         # df$due_date_diff = difftime(df$finish_date,df$due_date)
