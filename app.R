@@ -91,9 +91,8 @@ server <- function(input, output) {
         #estimate date completed
         new_df = df %>% 
           clean_names() %>% 
-          mutate(estimated_shifts = (avg_time_minutes/60)/8, 
+          mutate(estimated_shifts = (time_avg * qty_remaining/60)/8, 
                  estimated_days = estimated_shifts / 2,
-                 estimated_days = estimated_days * (qty_remaining/100),
                  finish_date = as.Date(current_date) + estimated_days,
                  due_date_diff = difftime(finish_date, ship_by))
           
