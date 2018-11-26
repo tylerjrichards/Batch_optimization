@@ -29,7 +29,9 @@ ui <- fluidPage(
       # Input: Checkbox if file has header ----
       checkboxInput("header", "Header", TRUE),
       
-      
+      sliderInput("weight_size", "Weight of Item Size:",
+                  min = 0, max = 1,
+                  value = .5),
       
       
       
@@ -47,7 +49,7 @@ ui <- fluidPage(
     # Main panel for displaying outputs ----
     mainPanel(
       # Output: Data file ----
-      tableOutput("contents")
+      dataTableOutput("contents")
       
     )
     
@@ -62,7 +64,7 @@ server <- function(input, output) {
     
     print("Algorithm Results: Below is the table with a prioritized production schedule optimized by minimizing late days")
   })
-  output$contents <- renderTable({
+  output$contents <- renderDataTable({
     
     # input$file1 will be NULL initially. After the user selects
     # and uploads a file, head of that data file by default,
@@ -78,7 +80,7 @@ server <- function(input, output) {
         library(dplyr)
         time_estimates = read.csv("Time_Estimates.csv", header = TRUE)
         
-        current_date = Sys.Date()
+        current_date = as.Date("2018-11-24")
         
         #determine what type of product this is
         df$Item_time =  toupper(substr(df$`Item ID`, 2, 2))
@@ -91,14 +93,18 @@ server <- function(input, output) {
         #estimate date completed
         new_df = df %>% 
           clean_names() %>% 
-          mutate(estimated_shifts = (time_avg * qty_remaining/60)/8, 
+          mutate(estimated_shifts = ((as.numeric(time_avg) * as.numeric(qty_remaining) + 624.5) /60)/8, 
                  estimated_days = estimated_shifts / 2,
-                 finish_date = as.Date(current_date) + estimated_days,
-                 due_date_diff = difftime(finish_date, ship_by))
+                 date = current_date,
+                 estimated_finish_date = as.Date(current_date) + estimated_days,
+                 due_date_diff = difftime(estimated_finish_date, ship_by))
+                 
+        new_df = new_df[order(new_df$due_date_diff, decreasing = TRUE),]
           
+        new_df = new_df %>% 
+          select(line_description, qty_remaining, ship_by, estimated_finish_date, estimated_shifts, estimated_days, date)
           
-          
-          
+        
         #calculate date difference
         
         # df$finish_shifts = round(df$time_to_make / 8)
@@ -118,10 +124,10 @@ server <- function(input, output) {
     )
     
     if(input$disp == "head") {
-      return(head(df))
+      head(new_df)
     }
     else {
-      return(df)
+      new_df
     }
     
   })
