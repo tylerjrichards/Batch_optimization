@@ -29,10 +29,12 @@ ui <- fluidPage(
       # Input: Checkbox if file has header ----
       checkboxInput("header", "Header", TRUE),
       
-      sliderInput("weight_size", "Weight of Item Size:",
+      sliderInput("weight_qty", "Weight of Order Size:",
                   min = 0, max = 1,
                   value = .5),
-      
+      sliderInput("weight_value", "Weight of Order Revenue:",
+                  min = 0, max = 1,
+                  value = .5),
       
       
       # Horizontal line ----
@@ -97,12 +99,16 @@ server <- function(input, output) {
                  estimated_days = estimated_shifts / 2,
                  date = current_date,
                  estimated_finish_date = as.Date(current_date) + estimated_days,
-                 due_date_diff = difftime(estimated_finish_date, ship_by))
-                 
-        new_df = new_df[order(new_df$due_date_diff, decreasing = TRUE),]
+                 due_date_diff = scale(difftime(estimated_finish_date, ship_by)),
+                 qty_scaled = scale(qty_ordered),
+                 value_scaled = scale(value),
+                 rank = (qty_scaled * input$weight_qty) + (value_scaled * input$weight_value) + due_date_diff)
+        #weight on quantity ordered and weight
+        
+        new_df = new_df[order(new_df$rank, decreasing = TRUE),]
           
         new_df = new_df %>% 
-          select(line_description, qty_remaining, ship_by, estimated_finish_date, estimated_shifts, estimated_days, date)
+          select(line_description, qty_remaining, ship_by, estimated_shifts, date, rank)
           
         
         #calculate date difference
