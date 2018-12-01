@@ -1,11 +1,13 @@
 library(shiny)
 library(readxl)
 library(janitor)
+library(dplyr)
+library(ggplot2)
 # Define UI for data upload app ----
 ui <- fluidPage(
   
   # App title ----
-  titlePanel("Inspired Energy: Minimizing Late Days Optimization"),
+  titlePanel("Inspired Energy: Minimizing Late Days Optimization and Clustering"),
   
   # Sidebar layout with input and output definitions ----
   sidebarLayout(
@@ -28,6 +30,7 @@ ui <- fluidPage(
       
       # Input: Checkbox if file has header ----
       checkboxInput("header", "Header", TRUE),
+      checkboxInput("clustered", "Clustered Output", FALSE),
       
       sliderInput("weight_qty", "Weight of Order Size:",
                   min = 0, max = 1,
@@ -79,7 +82,6 @@ server <- function(input, output) {
     tryCatch(
       {
         df <- read_xlsx(input$file1$datapath,sheet = "Raw Report with Extra Columns")
-        library(dplyr)
         time_estimates = read.csv("Time_Estimates.csv", header = TRUE)
         
         current_date = as.Date("2018-11-24")
@@ -106,21 +108,25 @@ server <- function(input, output) {
         #weight on quantity ordered and weight
         
         new_df = new_df[order(new_df$rank, decreasing = TRUE),]
-          
+        
+        new_df$due_date_diff = new_df$due_date_diff[,1]
+        new_df$qty_scaled = new_df$qty_scaled[,1]
+        new_df$value_scaled = new_df$value_scaled[,1]
+        new_df$rank =  new_df$rank[,1]
+      
+        
+        clustered =new_df %>% 
+          mutate(gr = cut_number(rank, n = 20)) %>% 
+          group_by(gr, core_pack, actual_ship_week) %>% 
+          summarise(clustering = paste0(line_description, collapse = ","),
+                    num_products = n()) %>% 
+          ungroup() %>% 
+          select(-gr)
+                   
         new_df = new_df %>% 
-          select(line_description, qty_remaining, ship_by, estimated_shifts, date, rank)
+          select(line_description, qty_remaining, ship_by, estimated_shifts, date, rank)                                                      
           
         
-        #calculate date difference
-        
-        # df$finish_shifts = round(df$time_to_make / 8)
-        # df$finish_date = as.Date(current_date) + df$finish_shifts 
-        # df$due_date_diff = difftime(df$finish_date,df$due_date)
-        # df$scaled_diff = scale(df$due_date_diff)
-        # df$rank = df$client_importance + df$scaled_diff
-        # df = df[order(df$rank, decreasing = TRUE),]
-        # df = df %>% 
-        #   select(product, rank, due_date)
         
       },
       error = function(e) {
@@ -129,10 +135,16 @@ server <- function(input, output) {
       }
     )
     
-    if(input$disp == "head") {
+    if(input$disp == "head" & input$clustered == "FALSE") {
       head(new_df)
     }
-    else {
+    else if(input$disp == "head" & input$clustered == "TRUE"){
+      head(clustered)
+    }
+    else if(input$disp == "all" & input$clustered == "TRUE"){
+      clustered
+    }
+    else{
       new_df
     }
     

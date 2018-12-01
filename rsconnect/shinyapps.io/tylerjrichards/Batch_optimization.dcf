@@ -5,8 +5,8 @@ account: tylerjrichards
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 592730
-bundleId: 1724319
+bundleId: 1733313
 url: https://tylerjrichards.shinyapps.io/Batch_optimization/
-when: 1543352176.2144
+when: 1543702893.85908
 asMultiple: FALSE
 asStatic: FALSE
