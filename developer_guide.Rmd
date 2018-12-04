@@ -1,0 +1,31 @@
+---
+title: "Web Application Developer Guide"
+author: "Tyler Richards"
+date: "`r Sys.Date()`"
+output:
+  prettydoc::html_pretty:
+    theme: tactile
+    highlight: github
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+### Inspired Energy: Batch Optimization
+
+The following document contains a developer guide for an application created by a group of industrial engineers in a senior project group at the University of Florida for Inspired Energy and will walk through how-to change/edit the application. If you're looking for a user edition of the developer, please check out the user guide which contains a guide for application use. 
+
+#### Application Overview
+
+The application is hosted currently as a shiny application built in the language R. To get it locally on your computer, first download [R](https://cran.cnr.berkeley.edu/), [RStudio](https://www.rstudio.com/products/rstudio/download/), and then, in RStudio, pressing 'File > New Project > Version Control > Git'. In the “repository URL” paste the URL of your new GitHub repository, which is https://github.com/tylerjrichards/Batch_optimization.git.  
+The example data is hosted in Example_data.xlsx. It is very useful to look at that data before opening up the app.R file, which actually does most of the work.  
+By far the most work is done in the app.R file. It is well commented and has instructions about how to edit it.
+
+#### Adding a new Factor
+
+At the end of the mutate function in the app.R file (around line 113 at the time of writing), there is a created column called rank. To add another factor, just create another column with your factor inside and add it to rank to change the factor. You'll notice that the weight inputs are applied in this step as well, and adding another slider bar involves copying the format for the previous bars for your use.
+
+#### Tips for porting
+
+If you're reading this, and don't know much about R and want to port this application into a framework that you prefer (flask/react would be excellent frameworks for this, an excel macro less so but it would work), the key is to understand what is happing in the R code through the comments, and replicating that across to whatever language is useful. The majority of the work is done in app.R so that would be a wonderful place to start.  

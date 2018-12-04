@@ -1,3 +1,5 @@
+
+#loads all the necessary libraries
 library(shiny)
 library(readxl)
 library(janitor)
@@ -23,15 +25,17 @@ ui <- fluidPage(
                            ".xlsx")),
       
       # Horizontal line ----
-
+      #adds a download button
       downloadButton("downloadData", "Download Example Data"),
       
       tags$hr(),
       
       # Input: Checkbox if file has header ----
       checkboxInput("header", "Header", TRUE),
+      # Input: Checkbox for clustering option
       checkboxInput("clustered", "Clustered Output", FALSE),
       
+      #Input: Get both the weights with a slider bar
       sliderInput("weight_qty", "Weight of Order Size:",
                   min = 0, max = 1,
                   value = .5),
@@ -81,16 +85,18 @@ server <- function(input, output) {
     # having a comma separator causes `read.csv` to error
     tryCatch(
       {
+        #create a dataframe called df from the path given by the user
         df <- read_xlsx(input$file1$datapath,sheet = "Raw Report with Extra Columns")
+        #get the time estimates from the Time estimates csv
         time_estimates = read.csv("Time_Estimates.csv", header = TRUE)
         
+        #the actual date does not matter, you can put any date in the past here and because the difference is eventually scaled you will get the same result
         current_date = as.Date("2018-11-24")
         
         #determine what type of product this is
         df$Item_time =  toupper(substr(df$`Item ID`, 2, 2))
         
         #merge with estimated times
-        
         estimated_times = read.csv("Time_Estimates.csv")
         df = merge(df, estimated_times, by.x = "Item_time", by.y = "Letter")
         
@@ -107,14 +113,16 @@ server <- function(input, output) {
                  rank = (qty_scaled * input$weight_qty) + (value_scaled * input$weight_value) + due_date_diff)
         #weight on quantity ordered and weight
         
+        #order by the rank
         new_df = new_df[order(new_df$rank, decreasing = TRUE),]
         
+        #move from a matrix
         new_df$due_date_diff = new_df$due_date_diff[,1]
         new_df$qty_scaled = new_df$qty_scaled[,1]
         new_df$value_scaled = new_df$value_scaled[,1]
         new_df$rank =  new_df$rank[,1]
       
-        
+        #this clustered dataframe is only shown if the clustered is toggled, and groups by ship weeks etc
         clustered =new_df %>% 
           mutate(gr = cut_number(rank, n = 20)) %>% 
           group_by(gr, core_pack, actual_ship_week) %>% 
@@ -123,6 +131,7 @@ server <- function(input, output) {
           ungroup() %>% 
           select(-gr)
                    
+        #remove a lot of the columns for ease, add a column name in the select function if more would be useful
         new_df = new_df %>% 
           select(line_description, qty_remaining, ship_by, estimated_shifts, date, rank)                                                      
           
@@ -135,6 +144,7 @@ server <- function(input, output) {
       }
     )
     
+    #logic statements for if the clustered vs just the top 5 options
     if(input$disp == "head" & input$clustered == "FALSE") {
       head(new_df)
     }
@@ -150,11 +160,13 @@ server <- function(input, output) {
     
   })
   
+  #handles data output
   output$downloadData <- downloadHandler(
     filename <- function() {
       paste("output", "xlsx", sep=".")
     },
     
+    #sets data name
     content <- function(file) {
       file.copy("Example_data.xlsx", file)
     },

@@ -1,0 +1,32 @@
+---
+title: "Web Application User Guide"
+author: "Tyler Richards"
+date: "`r Sys.Date()`"
+output:
+  prettydoc::html_pretty:
+    theme: tactile
+    highlight: github
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+### Inspired Energy: Batch Optimization
+
+The following document contains a user guide for use of an application created by a group of industrial engineers in a senior project group at the University of Florida for Inspired Energy and will walk through a quick how-to for document use. If you're looking for a developer edition of the user_guide, please check out the developer_guide which contains a guide for changing/editing the application.
+
+#### Accessing the Application
+Until December 10th 2018, you can find the application hosted on the website of the author, Tyler Richards who is currently hosting the web applicaiton at this [link](https://tylerjrichards.shinyapps.io/Batch_optimization/). After that point, there are local options that are more difficult. You can run it locally by downloading [R](https://cran.cnr.berkeley.edu/), [RStudio](https://www.rstudio.com/products/rstudio/download/), and then, in RStudio, pressing 'File > New Project > Version Control > Git'. In the “repository URL” paste the URL of your new GitHub repository, which is https://github.com/tylerjrichards/Batch_optimization.git.  
+
+#### Uploading an Order File
+Once you're on the application, under the excel file, click 'Browse' and select on your local computer the order file. If you're unsure of what format the file should be in, click the 'Download Example Data' to get the proper format. 
+
+#### Editing the Weights
+The algorithm estimates the number of days an order will take, and prioritizes orders based on which one will make the total number of late days the smallest. If you would like the larger orders to be prioritized more, pull the slider bar to the right. If you would like the size of the order not to be taken into account, pull the slider bar left. The same is true for the order revenue. 
+
+#### Clustering
+To turn the optimal clustering of orders on and off, click the 'Clustered Output' toggle on the applicaiton. This will attempt to cluster orders based on the core pack size, shipping week, and their importance based on the results of the algorithm. 
+
+#### Display
+To just view the first 5 results of the ranking algorithm, click the button next to First_Five on the display section. If you want to view everything, click the button next to All. 
